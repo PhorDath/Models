@@ -1,0 +1,30 @@
+//Number of jobs (n) and number of machines (m):
+20 2
+//Machine capacities (Qk):
+50 30
+//Processing times of jobs (pjk):
+43 26 
+21 45 
+25 42 
+42 16 
+54 26 
+12 51 
+30 40 
+10 55 
+19 44 
+10 43 
+20 58 
+52 22 
+41 23 
+23 45 
+26 53 
+16 56 
+12 50 
+27 48 
+51 21 
+50 22 
+
+//Size of the n jobs (sj):
+9 3 13 8 6 8 7 11 2 13 11 2 8 7 14 9 3 11 5 4 
+//Ready time of the n jobs (rj):
+3 24 9 29 16 12 2 22 3 18 1 32 14 30 25 16 33 3 30 24 

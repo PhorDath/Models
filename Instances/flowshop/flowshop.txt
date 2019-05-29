@@ -1,0 +1,80 @@
+Neste arquivo tem 5 INSTANCIAS para o problema FLOWSHOP.
+
+
+Numero tarefas = 10
+Numero máquinas = 3
+Tempos de processamento [tarefa, maquina]:
+  2  26  30
+  16   6  24
+  30   1  26
+  26   1  26
+   9   1  13
+  16  19  19
+  25  27  26
+  16  27   5
+   1   8   6
+  25   8  29
+
+
+Numero tarefas = 12
+Numero máquinas = 3
+Tempos de processamento [tarefa, maquina]:
+   4  22   9
+   5   7  19
+  21  22  26
+   5  17  17
+  20  30  24
+  21  30  27
+  13  23   7
+   7  14  17
+   7  28  21
+   4  13  13
+  13  20   7
+  23   1  10
+
+
+
+
+Numero tarefas = 14
+Numero máquinas = 4
+Tempos de processamento [tarefa, maquina]:
+  456  856  963  696
+  789  930   21  320
+  630  214  475  142
+  214  257  320  753
+  573  896  124  214
+  218  532  752  528
+  653  142  147  653
+  214  547  532  214
+  204  865  145  527
+  785  321  763  536
+  696  124  214  214
+  532   12  257  528
+   12  345  854  888
+  457  678  123  999
+
+
+Numero tarefas = 15
+Numero máquinas = 3
+Tempos de processamento [tarefa, maquina]:
+  23   6   4
+  30  13  26
+   8  12  21
+   9  26  28
+  23  15  10
+  18  12  21
+  28   4   9
+   8  27  13
+  21   4  27
+  16   7   5
+   5  10  20
+   9   6  24
+  28  22  18
+   9  21  13
+  14  27   6
+
+
+Numero tarefas = 20
+Numero máquinas = 5
+Tempos de processamento [tarefa, maquina]:
+54	79	16	66	5883	3	89	58	5615	11	49	31	2071	99	15	68	8577	56	89	78	5336	70	45	91	3553	99	60	13	5338	60	23	59	4127	5	57	49	6987	56	64	85	1376	3	7	85	8691	61	1	9	7214	73	63	39	829	75	41	41	4912	47	63	56	4777	14	47	40	8732	21	26	54	5887	86	75	77	1868	5	77	51	6894	77	40	31	28

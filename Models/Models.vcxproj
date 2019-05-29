@@ -124,6 +124,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="pmedians.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pmedians.h" />
+    <ClInclude Include="split.h" />
+    <ClInclude Include="useful.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
