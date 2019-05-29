@@ -5,7 +5,13 @@
 using namespace std;
 
 int main() {
-	pmedians p("Probs_5_med_70_50.txt");
-	p.printData();
+	string dir = "D:/Victor/Pos-Graduacao/UFV/2 periodo/INF682/Trabalhos/01/Implementation/Models/Instances/pmedianas/";
+	fstream file(dir + "all.txt", ios::in);
+
+	string line;
+	while (getline(file, line)) {
+		pmedians p(line);
+		p.setupModel();
+	}	
 	return 0;
 }
