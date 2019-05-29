@@ -6,6 +6,6 @@ using namespace std;
 
 int main() {
 	pmedians p("Probs_5_med_70_50.txt");
-
+	p.printData();
 	return 0;
 }

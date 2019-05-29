@@ -128,6 +128,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pmedians.h" />
+    <ClInclude Include="split.cpp" />
     <ClInclude Include="split.h" />
     <ClInclude Include="useful.h" />
   </ItemGroup>

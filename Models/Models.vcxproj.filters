@@ -29,6 +29,9 @@
     <ClInclude Include="useful.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="split.cpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="split.h">
       <Filter>Header Files</Filter>
     </ClInclude>

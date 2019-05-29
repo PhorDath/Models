@@ -3,7 +3,9 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include "split.h"
+#include <algorithm>
+#include <cctype>
+//#include "split.h"
 #include "useful.h"
 
 using namespace std;
@@ -16,7 +18,8 @@ private:
 	int numMedians;
 	int numClients;
 	int numPlaces;
-	vector<int> demand;
+	int placesCapacity;
+	vector<int> demands;
 	vector<coord> coordsClients;
 	vector<coord> coordsPlaces;
 	vector<vector<float>> distanceMatrix;
