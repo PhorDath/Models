@@ -27,6 +27,12 @@
     <ClCompile Include="strf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tsp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vrp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pmedians.h">
@@ -45,6 +51,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="strf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tsp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vrp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -127,6 +127,8 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pmedians.cpp" />
     <ClCompile Include="strf.cpp" />
+    <ClCompile Include="tsp.cpp" />
+    <ClCompile Include="vrp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="designation.h" />
@@ -134,7 +136,9 @@
     <ClInclude Include="strf.h" />
     <ClInclude Include="split.cpp" />
     <ClInclude Include="split.h" />
+    <ClInclude Include="tsp.h" />
     <ClInclude Include="useful.h" />
+    <ClInclude Include="vrp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
