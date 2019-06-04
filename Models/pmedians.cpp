@@ -1,27 +1,5 @@
 #include "pmedians.h"
 
-vector<string> split(string line, char token) {
-	vector<string> tokens;
-
-	string aux = "";
-	//cout << line.length() << endl;
-	for (unsigned int i = 0; i < line.length(); i++) {
-		if (line.at(i) != token) {
-			aux += line.at(i);
-		}
-		else {
-			tokens.push_back(aux);
-			aux = "";
-		}
-	}
-	tokens.push_back(aux);
-
-
-	//printVectorString(tokens);
-
-	return tokens;
-}
-
 float distance(coord a, coord b) {
 	return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2) * 1.0);
 }
@@ -115,17 +93,16 @@ pmedians::pmedians(string fileName)
 	this->fileName = fileName;
 	
 	fstream file;
-	file.open(dir + fileName, ios::in);
+	file.open(fileName, ios::in);
 	if (file.is_open() == false) {
 		cout << "Error reading file " + fileName << endl;
-		cout << "On the directory " + dir << endl;
+		//cout << "On the directory " + dir << endl;
 	}
-	
+
 	string line;
-	
 	int cont = 1;
 	while (getline(file, line)) {
-		vector<string> tokens = split(line, ' ');
+		vector<string> tokens = strf::split(line, ' ');
 		try {
 			if (cont == 1) { // reading number of medians
 				this->numMedians = stoi(tokens.at(0));

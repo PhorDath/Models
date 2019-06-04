@@ -123,11 +123,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="designation.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pmedians.cpp" />
+    <ClCompile Include="strf.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="designation.h" />
     <ClInclude Include="pmedians.h" />
+    <ClInclude Include="strf.h" />
     <ClInclude Include="split.cpp" />
     <ClInclude Include="split.h" />
     <ClInclude Include="useful.h" />

@@ -1,6 +1,8 @@
-#include "split.h"
+#include "strf.h"
 
-vector<string> split(string line, char token) {
+strf::strf(){}
+
+vector<string> strf::split(string line, char token) {
 	vector<string> tokens;
 	string aux = "";
 	for (unsigned int i = 0; i < line.length(); i++) {
@@ -8,15 +10,20 @@ vector<string> split(string line, char token) {
 			aux += line.at(i);
 		}
 		else {
-			tokens.push_back(aux);
-			aux = "";
+			if (aux != " " || aux != "") {
+				tokens.push_back(aux);
+				aux = "";
+			}
 		}
 	}
-	tokens.push_back(aux);
+	if (aux != " " || aux != "") {
+		tokens.push_back(aux);
+	}
+		
 	return tokens;
 }
 
-vector<string> split2(string line, char token1, char token2) {
+vector<string> strf::split2(string line, char token1, char token2) {
 	vector<string> tokens;
 	string aux = "";
 	for (unsigned int i = 0; i < line.length(); i++) {
@@ -32,7 +39,7 @@ vector<string> split2(string line, char token1, char token2) {
 	return tokens;
 }
 
-vector<string> split3(string line, char token1, char token2, char token3) {
+vector<string> strf::split3(string line, char token1, char token2, char token3) {
 	vector<string> tokens;
 	string aux = "";
 	for (unsigned int i = 0; i < line.length(); i++) {
@@ -47,3 +54,5 @@ vector<string> split3(string line, char token1, char token2, char token3) {
 	tokens.push_back(aux);
 	return tokens;
 }
+
+strf::~strf(){}

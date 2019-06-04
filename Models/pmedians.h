@@ -1,4 +1,7 @@
-#pragma once
+#ifndef PMEDIANS_H
+#define PMEDIANS_H
+
+//#pragma once
 #include <iostream>
 #include <string>
 #include <vector>
@@ -6,8 +9,9 @@
 #include <algorithm>
 #include <cctype>
 #include <gurobi_c++.h>
-//#include "split.h"
 #include "useful.h"
+#include "strf.h"
+//#include "split.h"
 
 using namespace std;
 
@@ -18,7 +22,7 @@ class pmedians
 {
 private:
 	// input data
-	string dir = "D:/Victor/Pos-Graduacao/UFV/2 periodo/INF682/Trabalhos/01/Instances/pmedianas/";
+	//string dir = "D:/Victor/Pos-Graduacao/UFV/2 periodo/INF682/Trabalhos/01/Instances/pmedianas/";
 	string fileName;
 	int numMedians;
 	int numClients, n;
@@ -55,3 +59,4 @@ public:
 			~pmedians();
 };
 
+#endif

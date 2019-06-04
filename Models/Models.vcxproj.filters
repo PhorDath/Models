@@ -21,6 +21,12 @@
     <ClCompile Include="pmedians.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="designation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="strf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pmedians.h">
@@ -33,6 +39,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="split.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="designation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="strf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
