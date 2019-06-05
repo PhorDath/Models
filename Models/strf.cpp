@@ -9,11 +9,12 @@ vector<string> strf::split(string line, char token) {
 		if (line.at(i) != token) {
 			aux += line.at(i);
 		}
+		else if (aux != ""){			
+			tokens.push_back(aux);
+			aux = "";			
+		}
 		else {
-			if (aux != " " || aux != "") {
-				tokens.push_back(aux);
-				aux = "";
-			}
+			aux = "";
 		}
 	}
 	if (aux != " " || aux != "") {
@@ -53,6 +54,25 @@ vector<string> strf::split3(string line, char token1, char token2, char token3) 
 	}
 	tokens.push_back(aux);
 	return tokens;
+}
+
+// remove any non digit character from a given string
+string strf::rnd(string x)
+{
+	x.erase(std::remove_if(x.begin(), x.end(), [](char c) {return !isdigit(c); }), x.end());
+	return x;
+}
+
+// remove any non digit character from a given string and covert to float
+float strf::rndac(string x)
+{
+	try {
+		string aux = rnd(x);
+		if (aux != "") {
+			return stoi(aux);
+		}		
+	}
+	catch (exception e) {}
 }
 
 strf::~strf(){}
