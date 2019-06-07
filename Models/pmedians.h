@@ -10,6 +10,7 @@
 #include <cctype>
 #include <gurobi_c++.h>
 #include "useful.h"
+#include "utilities.h"
 #include "strf.h"
 //#include "split.h"
 
@@ -23,7 +24,8 @@ class pmedians
 private:
 	// input data
 	//string dir = "D:/Victor/Pos-Graduacao/UFV/2 periodo/INF682/Trabalhos/01/Instances/pmedianas/";
-	string fileName;
+	string fileName = "";
+	string directory = "";
 	int numMedians;
 	int numClients, n;
 	int numPlaces, m;
@@ -33,6 +35,8 @@ private:
 	vector<coord> coordsPlaces;
 	vector<vector<float>> distanceMatrix;
 	
+	void readInstance(); // read the instances given by the professor
+
 	// model variables (Gurobi)
 	//GRBModel *model;
 	X x;
@@ -52,9 +56,10 @@ private:
 	void c4(GRBModel &);
 
 public:
-			pmedians(string);
+			pmedians(string fileName);
+			pmedians(string directory, string fileName);
 	void	setupModel();
-	void	getSolution(GRBModel &);
+	void	getSolution(GRBModel &model);
 	void	printData();
 			~pmedians();
 };

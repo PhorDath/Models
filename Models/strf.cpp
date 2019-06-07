@@ -17,7 +17,7 @@ vector<string> strf::split(string line, char token) {
 			aux = "";
 		}
 	}
-	if (aux != " " || aux != "") {
+	if (aux.compare("")) {
 		tokens.push_back(aux);
 	}
 		

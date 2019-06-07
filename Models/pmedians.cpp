@@ -4,6 +4,97 @@ float distance(coord a, coord b) {
 	return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2) * 1.0);
 }
 
+void pmedians::readInstance()
+{
+	fstream file;
+	file.open(directory + fileName, ios::in);
+	if (file.is_open() == false) {
+		cout << "Error reading file " + fileName << endl;
+		cout << "On the directory " + directory << endl;
+	}
+
+	string line;
+	int cont = 1;
+	while (getline(file, line)) {
+		vector<string> tokens = strf::split(line, ' ');
+		try {
+			if (cont == 1) { // reading number of medians
+				this->numMedians = stoi(tokens.at(0));
+			}
+			else if (cont == 2) { // reading number of clients
+				this->numClients = stoi(tokens.at(0));
+				cout << this->numClients << endl;
+			}
+			else if (cont >= 4 && cont < 4 + numClients) { // reading clients' coordinates
+				// remove all non digit characters from string
+				// this is needed due to the way i'm reading the file, with split (python style). 
+				// this prevent the stoi to try to convert strings like "(12," into integers
+				// for more reference on lamda expressions check the link http://www.drdobbs.com/cpp/lambdas-in-c11/240168241
+				auto x = tokens.at(3);
+				x.erase(std::remove_if(x.begin(), x.end(), [](char c) {return !isdigit(c); }), x.end()); // lambda expression FTW		
+				auto y = tokens.at(4);
+				y.erase(std::remove_if(y.begin(), y.end(), [](char c) {return !isdigit(c); }), y.end());  // more lamba
+
+				// storing coordinates
+				coord c;
+				c.x = stoi(x);
+				c.y = stoi(y);
+				this->coordsClients.push_back(c);
+			}
+			else if (cont == 4 + numClients + 2) { // reading clients' demands
+				for (auto tk : tokens) {
+					tk.erase(remove_if(tk.begin(), tk.end(), [](char c) {return !isdigit(c); }), tk.end()); // removing any non digit character from the token
+
+					// storing demands
+					this->demands.push_back(stoi(tk));
+				}
+			}
+			else if (cont == 4 + numClients + 2 + 2) { // reading number of places
+				this->numPlaces = stoi(tokens.at(0));
+			}
+			else if (cont >= 4 + numClients + 2 + 2 + 1 && cont < 4 + numClients + 2 + 2 + 1 + numPlaces) { // reading places' coordinates
+				// just like above, removing non digits chars from the token
+				auto x = tokens.at(3);
+				x.erase(std::remove_if(x.begin(), x.end(), [](char c) {return !isdigit(c); }), x.end()); // lambda expression FTW		
+				auto y = tokens.at(4);
+				y.erase(std::remove_if(y.begin(), y.end(), [](char c) {return !isdigit(c); }), y.end());  // more lamba
+
+				// storing places' coordinates
+				coord c;
+				c.x = stoi(x);
+				c.y = stoi(y);
+				this->coordsPlaces.push_back(c);
+			}
+			else if (cont == 4 + numClients + 2 + 2 + 1 + numPlaces) { // reading facilities capacity
+				this->placesCapacity = stoi(tokens.at(tokens.size() - 1));
+			}
+			// not reading the distance matrix
+			//else if (cont >= 4 + numClients + 2 + 2 + 1 + numPlaces + 3) { // reading distance matrix
+			//}
+		}
+		catch (exception& e) {
+			cout << e.what() << endl;
+			return;
+		}
+		cont++;
+	}
+	// distance matrix calculus
+	// resize matrix
+	distanceMatrix.resize(numClients);
+	for (int i = 0; i < numClients; i++) {
+		distanceMatrix.at(i).resize(numPlaces, 0);
+	}
+	// calculus
+	for (int i = 0; i < numClients; i++) {
+		for (int j = 0; j < numPlaces; j++) {
+			distanceMatrix.at(i).at(j) = int(distance(coordsClients.at(i), coordsPlaces.at(j)));
+		}
+	}
+
+	n = numClients;
+	m = numPlaces;
+}
+
 void pmedians::varX(GRBModel &model)
 {
 	// resize x decision variable
@@ -91,94 +182,14 @@ void pmedians::c4(GRBModel &model)
 pmedians::pmedians(string fileName)
 {
 	this->fileName = fileName;
-	
-	fstream file;
-	file.open(fileName, ios::in);
-	if (file.is_open() == false) {
-		cout << "Error reading file " + fileName << endl;
-		//cout << "On the directory " + dir << endl;
-	}
+	readInstance();
+}
 
-	string line;
-	int cont = 1;
-	while (getline(file, line)) {
-		vector<string> tokens = strf::split(line, ' ');
-		try {
-			if (cont == 1) { // reading number of medians
-				this->numMedians = stoi(tokens.at(0));
-			}
-			else if (cont == 2) { // reading number of clients
-				this->numClients = stoi(tokens.at(0));
-				cout << this->numClients << endl;
-			}
-			else if (cont >= 4 && cont < 4 + numClients) { // reading clients' coordinates
-				// remove all non digit characters from string
-				// this is needed due to the way i'm reading the file, with split (python style). 
-				// this prevent the stoi to try to convert strings like "(12," into integers
-				// for more reference on lamda expressions check the link http://www.drdobbs.com/cpp/lambdas-in-c11/240168241
-				auto x = tokens.at(3);
-				x.erase(std::remove_if(x.begin(), x.end(), [](char c) {return !isdigit(c); }), x.end()); // lambda expression FTW		
-				auto y = tokens.at(4);
-				y.erase(std::remove_if(y.begin(), y.end(), [](char c) {return !isdigit(c); }), y.end());  // more lamba
-
-				// storing coordinates
-				coord c;
-				c.x = stoi(x);
-				c.y = stoi(y);
-				this->coordsClients.push_back(c);
-			}
-			else if (cont == 4 + numClients + 2) { // reading clients' demands
-				for (auto tk : tokens) {
-					tk.erase(remove_if(tk.begin(), tk.end(), [](char c) {return !isdigit(c); }), tk.end()); // removing any non digit character from the token
-					
-					// storing demands
-					this->demands.push_back(stoi(tk));
-				}
-			}
-			else if (cont == 4 + numClients + 2 + 2) { // reading number of places
-				this->numPlaces= stoi(tokens.at(0));
-			}
-			else if (cont >= 4 + numClients + 2 + 2 + 1 && cont < 4 + numClients + 2 + 2 + 1 + numPlaces) { // reading places' coordinates
-				// just like above, removing non digits chars from the token
-				auto x = tokens.at(3);
-				x.erase(std::remove_if(x.begin(), x.end(), [](char c) {return !isdigit(c); }), x.end()); // lambda expression FTW		
-				auto y = tokens.at(4);
-				y.erase(std::remove_if(y.begin(), y.end(), [](char c) {return !isdigit(c); }), y.end());  // more lamba
-
-				// storing places' coordinates
-				coord c;
-				c.x = stoi(x);
-				c.y = stoi(y);
-				this->coordsPlaces.push_back(c);
-			}
-			else if (cont == 4 + numClients + 2 + 2 + 1 + numPlaces) { // reading facilities capacity
-				this->placesCapacity = stoi(tokens.at(tokens.size()-1));
-			}
-			// not reading the distance matrix
-			//else if (cont >= 4 + numClients + 2 + 2 + 1 + numPlaces + 3) { // reading distance matrix
-			//}
-		}
-		catch (exception& e) {
-			cout << e.what() << endl;
-			return;
-		}
-		cont++;
-	}
-	// distance matrix calculus
-	// resize matrix
-	distanceMatrix.resize(numClients);
-	for (int i = 0; i < numClients; i++) {
-		distanceMatrix.at(i).resize(numPlaces, 0);
-	}
-	// calculus
-	for (int i = 0; i < numClients; i++) {
-		for (int j = 0; j < numPlaces; j++) {
-			distanceMatrix.at(i).at(j) = int(distance(coordsClients.at(i), coordsPlaces.at(j)));
-		}
-	}
-
-	n = numClients;
-	m = numPlaces;
+pmedians::pmedians(string directory, string fileName)
+{
+	this->fileName = fileName;
+	this->directory = directory;
+	readInstance();
 }
 
 void pmedians::setupModel()
@@ -189,7 +200,7 @@ void pmedians::setupModel()
 	try {
 		//env = new GRBEnv();
 		GRBModel model = GRBModel(env);
-		model.set(GRB_StringAttr_ModelName, "pmedians");
+		model.set(GRB_StringAttr_ModelName, "pmedians_" + fileName);
 
 		varX(model);
 		varY(model);
@@ -206,7 +217,11 @@ void pmedians::setupModel()
 
 		model.optimize();
 
+		model.write("teste.sol");
+		utilities::processSolution(model);
 		getSolution(model);
+
+		//getSolution(model);
 	}
 	catch (GRBException e) {
 		cout << "Error code = " << e.getErrorCode() << endl;
@@ -216,37 +231,36 @@ void pmedians::setupModel()
 
 void pmedians::getSolution(GRBModel &model)
 {
-	int status = model.get(GRB_IntAttr_Status);
-
-	if (status == GRB_UNBOUNDED)
-	{
-		cout << "O modelo nao pode ser resolvido porque e ilimitado" << endl;
+	string dir = directory + "output/";
+	string fn = model.get(GRB_StringAttr_ModelName);
+	//model.write(directory + fn + ".sol");
+	fstream output(dir + fn, ios::out | ios::trunc);
+	if (output.is_open() == false) {
+		cout << "Error opening output file " << fn << endl;
+		cout << "On directory " << dir << endl;
+		exit(1);
 	}
-	if (status == GRB_OPTIMAL)
-	{
-		cout << "Solucao otima encontrada!" << endl;
-		//Acessa e imprime o valor da funcao objetivo
-
-		cout << "O valor da solucao otima e: " << model.get(GRB_DoubleAttr_ObjVal) << endl;
-
+	// writing variables in a format for easy ploting
+	output << "x: " << endl;
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
+			auto temp = model.getVarByName("x(" + to_string(i) + "," + to_string(j) + ")").get(GRB_DoubleAttr_X);
+			if (temp == -0) { // i dont know why some values are beeing -0
+				temp *= -1;
+			}
+			output << temp << " ";
+		}
+		output << endl;
 	}
-	if (status == GRB_TIME_LIMIT)
-	{
-		cout << "Tempo limite!" << endl;
-		//Acessa e imprime o valor da funcao objetivo
-
-		cout << "O valor da melhot solucao ate o momento e: " << model.get(GRB_DoubleAttr_ObjVal) << endl;
-
+	output << "y: " << endl;
+	for (int j = 0; j < m; j++) {
+		auto temp = model.getVarByName("y(" + to_string(j) + ")").get(GRB_DoubleAttr_X);
+		if (temp == -0) { // i dont know why some values are beeing -0
+			temp *= -1;
+		}
+		output << temp << " ";
 	}
-	if (status == GRB_INFEASIBLE)
-	{
-		cout << "O modelo nao pode ser resolvido porque e inviavel" << endl;
-
-	}
-	else {
-		cout << "Status: " << status << endl;
-
-	}
+	output.close();
 }
 
 void pmedians::printData()

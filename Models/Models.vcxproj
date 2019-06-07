@@ -124,6 +124,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="designation.cpp" />
+    <ClCompile Include="flowshop.cpp" />
+    <ClCompile Include="jobsscheduling.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pmedians.cpp" />
     <ClCompile Include="strf.cpp" />
@@ -133,6 +135,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="designation.h" />
+    <ClInclude Include="flowshop.h" />
+    <ClInclude Include="jobsscheduling.h" />
     <ClInclude Include="pmedians.h" />
     <ClInclude Include="strf.h" />
     <ClInclude Include="split.cpp" />
