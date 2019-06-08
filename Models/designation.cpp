@@ -1,66 +1,13 @@
 #include "designation.h"
 
-// create and add var x to model
-void designation::varX(GRBModel &model)
+void designation::readInstance()
 {
-	x.resize(m);
-	for (int i = 0; i < x.size(); i++) {
-		x.at(i).resize(n);
-	}
-	for (int i = 0; i < x.size(); i++) {
-		for (int j = 0; j < x.at(i).size(); j++) {
-			x.at(i).at(j) = model.addVar(0, 1, 1, GRB_BINARY, "x(" + to_string(i) + "," + to_string(j) + ")");
-		}
-	}
-	model.update();
-}
-
-void designation::fo(GRBModel &model)
-{
-	GRBLinExpr FO = 0;
-	for (int i = 0; i < x.size(); i++) {
-		for (int j = 0; j < n; j++) {
-			FO += x.at(i).at(j) * C.at(i).at(j);
-		}
-	}
-	model.setObjective(FO, GRB_MINIMIZE); // minimize the total cost
-	model.update();
-}
-
-void designation::c1(GRBModel &model)
-{
-	// capacity of each machine must be respected
-	for (int i = 0; i < m; i++) {
-		GRBLinExpr c1 = 0;
-		for (int j = 0; j < n; j++) {
-			c1 += A.at(i).at(j) * x.at(i).at(j);
-		}
-		model.addConstr(c1 <= B.at(i), "c1(" + to_string(i) + ")");
-	}
-}
-
-void designation::c2(GRBModel &model)
-{
-	// each task must be executed by one machine
-	for (int j = 0; j < n; j++) {
-		GRBLinExpr c2 = 0;
-		for (int i = 0; i < m; i++) {
-			c2 += x.at(i).at(j);
-		}
-		model.addConstr(c2 == 1, "c2(" + to_string(j) + ")");
-	}
-}
-
-designation::designation(string fName)
-{
-	
-	this->fileName = fName;
-	fstream file(fileName, ios::in);
+	fstream file(directory + fileName, ios::in);
 	if (file.is_open() == false) {
 		cout << "Error opening file " << fileName << endl;
+		cout << "On directory " << directory << endl;
 		return;
 	}
-	cout << fileName << endl;
 
 	int count = 1;
 	int countC = 0; // count number of C rows read
@@ -160,6 +107,71 @@ designation::designation(string fName)
 	}
 }
 
+// create and add var x to model
+void designation::varX(GRBModel &model)
+{
+	x.resize(m);
+	for (int i = 0; i < x.size(); i++) {
+		x.at(i).resize(n);
+	}
+	for (int i = 0; i < x.size(); i++) {
+		for (int j = 0; j < x.at(i).size(); j++) {
+			x.at(i).at(j) = model.addVar(0, 1, 1, GRB_BINARY, "x(" + to_string(i) + "," + to_string(j) + ")");
+		}
+	}
+	model.update();
+}
+
+void designation::fo(GRBModel &model)
+{
+	GRBLinExpr FO = 0;
+	for (int i = 0; i < x.size(); i++) {
+		for (int j = 0; j < n; j++) {
+			FO += x.at(i).at(j) * C.at(i).at(j);
+		}
+	}
+	model.setObjective(FO, GRB_MINIMIZE); // minimize the total cost
+	model.update();
+}
+
+void designation::c1(GRBModel &model)
+{
+	// capacity of each machine must be respected
+	for (int i = 0; i < m; i++) {
+		GRBLinExpr c1 = 0;
+		for (int j = 0; j < n; j++) {
+			c1 += A.at(i).at(j) * x.at(i).at(j);
+		}
+		model.addConstr(c1 <= B.at(i), "c1(" + to_string(i) + ")");
+	}
+}
+
+void designation::c2(GRBModel &model)
+{
+	// each task must be executed by one machine
+	for (int j = 0; j < n; j++) {
+		GRBLinExpr c2 = 0;
+		for (int i = 0; i < m; i++) {
+			c2 += x.at(i).at(j);
+		}
+		model.addConstr(c2 == 1, "c2(" + to_string(j) + ")");
+	}
+}
+
+designation::designation(string fileName)
+{
+	this->directory = "";
+	this->fileName = fileName;
+	readInstance();
+}
+
+designation::designation(string directory, string fileName)
+{
+	this->fileName = fileName;
+	this->directory = directory;
+	readInstance();
+}
+
 void designation::setupModel()
 {
 	GRBEnv env = GRBEnv(true);
@@ -168,7 +180,7 @@ void designation::setupModel()
 	try {
 		//env = new GRBEnv();
 		GRBModel model = GRBModel(env);
-		model.set(GRB_StringAttr_ModelName, "designation");
+		model.set(GRB_StringAttr_ModelName, "designation_" + fileName);
 
 		varX(model);
 		fo(model);
@@ -182,6 +194,7 @@ void designation::setupModel()
 
 		model.optimize();
 
+		utilities::processSolution(model);
 		getSolution(model);
 	}
 	catch (GRBException e) {
@@ -192,37 +205,28 @@ void designation::setupModel()
 
 void designation::getSolution(GRBModel &model)
 {
-	int status = model.get(GRB_IntAttr_Status);
-
-	if (status == GRB_UNBOUNDED)
-	{
-		cout << "O modelo nao pode ser resolvido porque e ilimitado" << endl;
+	string dir = directory + "output/";
+	string fn = model.get(GRB_StringAttr_ModelName);
+	//model.write(directory + fn + ".sol");
+	fstream output(dir + fn, ios::out | ios::trunc);
+	if (output.is_open() == false) {
+		cout << "Error opening output file " << fn << endl;
+		cout << "On directory " << dir << endl;
+		exit(1);
 	}
-	if (status == GRB_OPTIMAL)
-	{
-		cout << "Solucao otima encontrada!" << endl;
-		//Acessa e imprime o valor da funcao objetivo
-
-		cout << "O valor da solucao otima e: " << model.get(GRB_DoubleAttr_ObjVal) << endl;
-
+	// writing variables in a format for easy ploting
+	output << "# x " << n << " " << m << endl;
+	for (int i = 0; i < x.size(); i++) {
+		for (int j = 0; j < x.at(i).size(); j++) {
+			auto temp = model.getVarByName("x(" + to_string(i) + "," + to_string(j) + ")").get(GRB_DoubleAttr_X);
+			if (temp == -0) { // i dont know why some values are beeing -0
+				temp *= -1;
+			}
+			output << temp << " ";
+		}
+		output << endl;
 	}
-	if (status == GRB_TIME_LIMIT)
-	{
-		cout << "Tempo limite!" << endl;
-		//Acessa e imprime o valor da funcao objetivo
-
-		cout << "O valor da melhot solucao ate o momento e: " << model.get(GRB_DoubleAttr_ObjVal) << endl;
-
-	}
-	if (status == GRB_INFEASIBLE)
-	{
-		cout << "O modelo nao pode ser resolvido porque e inviavel" << endl;
-
-	}
-	else {
-		cout << "Status: " << status << endl;
-
-	}
+	output.close();
 }
 
 void designation::printData()

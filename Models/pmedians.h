@@ -16,9 +16,6 @@
 
 using namespace std;
 
-typedef vector<vector<GRBVar>> X;
-typedef vector<GRBVar> Y;
-
 class pmedians
 {
 private:
@@ -39,21 +36,17 @@ private:
 
 	// model variables (Gurobi)
 	//GRBModel *model;
-	X x;
-	Y y;
+	vector<vector<GRBVar>> x;
+	vector<GRBVar> y;
 
-	// decision variables setup
-	void varX(GRBModel &);
-	void varY(GRBModel &);
-
-	// objective function setup
-	void fo(GRBModel &);
-
-	// constrains setup
-	void c1(GRBModel &);
-	void c2(GRBModel &);
-	void c3(GRBModel &);
-	void c4(GRBModel &);
+	// model setup functions
+	void varX(GRBModel &model);
+	void varY(GRBModel &model);
+	void fo(GRBModel &model);
+	void c1(GRBModel &model); // each client i must be attended by only one facility
+	void c2(GRBModel &model); // exactly p facilities must be opened
+	void c3(GRBModel &model); // the demand's sum can't be higher then the facility capacity
+	void c4(GRBModel &model); // each client must be designated to a opend facility
 
 public:
 			pmedians(string fileName);

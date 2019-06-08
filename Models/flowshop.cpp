@@ -1,11 +1,117 @@
 #include "flowshop.h"
 
-
-
-flowshop::flowshop(string fName)
+flowshop::flowshop(string fileName)
 {
-	fileName = fName;
-	fstream file(fileName, ios::in);
+	this->directory = "";
+	this->fileName = fileName;
+	readInstance();
+}
+
+flowshop::flowshop(string directory, string fileName)
+{
+	this->directory = directory;
+	this->fileName = fileName;
+	readInstance();
+}
+
+void flowshop::setupModel()
+{
+	GRBEnv env = GRBEnv(true);
+	env.start();
+
+	try {
+		//env = new GRBEnv();
+		GRBModel model = GRBModel(env);
+		model.set(GRB_StringAttr_ModelName, "flowshop_" + fileName);
+
+		varX(model);
+		varS(model);
+		varC(model);
+		fo(model);
+
+		c1(model);
+		c2(model);
+		c3(model);
+		c4(model);
+		c5(model);
+		c6(model);
+		c7(model);
+
+		model.write("teste.lp");
+
+		model.getEnv().set(GRB_DoubleParam_TimeLimit, 600);
+
+		model.optimize();
+
+		utilities::processSolution(model);
+		getSolution(model);
+		model.write("teste.sol");
+	}
+	catch (GRBException e) {
+		cout << "Error code = " << e.getErrorCode() << endl;
+		cout << e.getMessage() << endl;
+	}
+}
+
+void flowshop::getSolution(GRBModel &model)
+{
+	string dir = directory + "output/";
+	string fn = model.get(GRB_StringAttr_ModelName);
+	//model.write(directory + fn + ".sol");
+	fstream output(dir + fn, ios::out | ios::trunc);
+	if (output.is_open() == false) {
+		cout << "Error opening output file " << fn << endl;
+		cout << "On directory " << dir << endl;
+		exit(1);
+	}
+	// writing variables in a format for easy ploting
+	output << "# x " << x.size() << " " << x.at(0).size() << endl;
+	for (int i = 0; i < x.size(); i++) {
+		for (int j = 0; j < x.at(i).size(); j++) {
+			auto temp = model.getVarByName("x(" + to_string(i) + "," + to_string(j) + ")").get(GRB_DoubleAttr_X);
+			if (temp == -0) { // i dont know why some values are beeing -0
+				temp *= -1;
+			}
+			output << temp << " ";
+		}
+		output << endl;
+	}
+	output << "# s " << s.size() << " " << s.at(0).size() << endl;
+	for (int i = 0; i < s.size(); i++) {
+		for (int j = 0; j < s.at(i).size(); j++) {
+			auto temp = model.getVarByName("s(" + to_string(i) + "," + to_string(j) + ")").get(GRB_DoubleAttr_X);
+			if (temp == -0) { // i dont know why some values are beeing -0
+				temp *= -1;
+			}
+			output << temp << " ";
+		}
+		output << endl;
+	}
+	output << "# c 1" << endl;
+	output << model.getVarByName("c").get(GRB_DoubleAttr_X) << endl;
+	output.close();
+}
+
+void flowshop::printData()
+{
+	cout << numTasks << " " << numMachines << endl;
+	cout << "p: \n";
+	for (auto i : p) {
+		for (auto j : i) {
+			cout << j << " ";
+		}
+		cout << endl;
+	}
+}
+
+
+flowshop::~flowshop()
+{
+}
+
+void flowshop::readInstance()
+{
+	fstream file(directory + fileName, ios::in);
 	if (file.is_open() == false) {
 		cout << "Error opening file " << fileName << endl;
 		exit(1);
@@ -32,96 +138,6 @@ flowshop::flowshop(string fName)
 		}
 		counter++;
 	}
-}
-
-void flowshop::setupModel()
-{
-	GRBEnv env = GRBEnv(true);
-	env.start();
-
-	try {
-		//env = new GRBEnv();
-		GRBModel model = GRBModel(env);
-		model.set(GRB_StringAttr_ModelName, "flowshop");
-
-		varX(model);
-		varS(model);
-		varC(model);
-		fo(model);
-
-		c1(model);
-		c2(model);
-		c3(model);
-		c4(model);
-		c5(model);
-		c6(model);
-		c7(model);
-
-		model.write("teste.lp");
-
-		model.getEnv().set(GRB_DoubleParam_TimeLimit, 600);
-
-		model.optimize();
-
-		getSolution(model);
-		model.write("teste.sol");
-	}
-	catch (GRBException e) {
-		cout << "Error code = " << e.getErrorCode() << endl;
-		cout << e.getMessage() << endl;
-	}
-}
-
-void flowshop::getSolution(GRBModel &model)
-{
-	int status = model.get(GRB_IntAttr_Status);
-
-	if (status == GRB_UNBOUNDED)
-	{
-		cout << "O modelo nao pode ser resolvido porque e ilimitado" << endl;
-	}
-	if (status == GRB_OPTIMAL)
-	{
-		cout << "Solucao otima encontrada!" << endl;
-		//Acessa e imprime o valor da funcao objetivo
-
-		cout << "O valor da solucao otima e: " << model.get(GRB_DoubleAttr_ObjVal) << endl;
-
-	}
-	if (status == GRB_TIME_LIMIT)
-	{
-		cout << "Tempo limite!" << endl;
-		//Acessa e imprime o valor da funcao objetivo
-
-		cout << "O valor da melhot solucao ate o momento e: " << model.get(GRB_DoubleAttr_ObjVal) << endl;
-
-	}
-	if (status == GRB_INFEASIBLE)
-	{
-		cout << "O modelo nao pode ser resolvido porque e inviavel" << endl;
-
-	}
-	else {
-		cout << "Status: " << status << endl;
-
-	}
-}
-
-void flowshop::printData()
-{
-	cout << numTasks << " " << numMachines << endl;
-	cout << "p: \n";
-	for (auto i : p) {
-		for (auto j : i) {
-			cout << j << " ";
-		}
-		cout << endl;
-	}
-}
-
-
-flowshop::~flowshop()
-{
 }
 
 void flowshop::varX(GRBModel &model)

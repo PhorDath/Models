@@ -45,7 +45,14 @@ void m2_all() {
 }
 
 void m3_all() {
+	string dir = DIR + MODEL3;
+	fstream file(dir + "all.txt", ios::in);
 
+	string line;
+	while (getline(file, line)) {
+		tsp t(dir + line);
+
+	}
 }
 
 void m4_all() {
@@ -86,9 +93,10 @@ int main() {
 	//cin >> op;
 
 	if (op == 0) {
-		pmedians m(DIR + MODEL1, INST1);
+		tsp m(DIR + MODEL3, INST3);
 		m.printData();
 		m.setupModel();
+		
 	}
 	// pmedians
 	else if (op == 1) {

@@ -1,5 +1,73 @@
 #include "vrp.h"
 
+void vrp::readInstance()
+{
+	fstream file(directory + fileName, ios::in);
+	if (file.is_open() == false) {
+		cout << "Error opening file: " << fileName << endl;
+		cout << "On directory " << directory << endl;
+		exit(1);
+	}
+	string line = "";
+	int counter{ 1 };
+	int counterClients{ 0 };
+	while (getline(file, line)) {
+		try {
+			vector<string> tokens = strf::split(line, ' ');
+			if (counter == 2) {
+				// reading number of clients
+				numClients = stoi(tokens.at(0));
+				n = numClients + 1;
+				//coords.resize(numClients + 1);
+			}
+			else if (counter == 4) {
+				// reading vehicle capacity
+				vehicleCapacity = stoi(tokens.at(0));
+			}
+			else if (counter == 7) {
+				// reading depot coordinates
+				depotCoord.x = strf::rndac(tokens.at(0));
+				depotCoord.y = strf::rndac(tokens.at(1));
+				coords.push_back(depotCoord); //coords.at(0) = depotCoord;
+			}
+			else if (counter >= 10 && counter < 10 + numClients) {
+				// reading clients coordinates
+				utilities::coord aux;
+				aux.x = strf::rndac(tokens.at(0));
+				aux.y = strf::rndac(tokens.at(1));
+				coords.push_back(aux);
+				//counterClients++;
+			}
+			else if (counter == 10 + numClients + 2) {
+				// reading clients demands
+				q.push_back(0); // first client represents the depot, with 0 demands
+				for (auto i : tokens) {
+					string aux = strf::rnd(i);
+					if (aux != "") {
+						q.push_back(stoi(aux));
+					}
+				}
+			}
+		}
+		catch (exception e) { // exception handling			
+			cout << e.what() << endl;
+			cout << "Line: \n" << line << endl;
+			exit(1);
+		}
+		counter++;
+	}
+	// distance matrix calculus
+	distance.resize(n);
+	for (int i = 0; i < n; i++) {
+		distance.at(i).resize(n);
+	}
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			distance.at(i).at(j) = floor(utilities::distance(coords.at(i), coords.at(j)));
+		}
+	}
+}
+
 void vrp::varX(GRBModel &model)
 {
 	x.resize(n);
@@ -103,73 +171,18 @@ void vrp::c5(GRBModel &model)
 	model.update();
 }
 
-vrp::vrp(string fName)
+vrp::vrp(string fileName)
 {
-	fstream file(fName, ios::in);
-	if (file.is_open() == false) {
-		cout << "Error opening file: \n";
-		cout << fName;
-		exit(1);
-	}
-	fileName = fName;
-	string line = "";
-	int counter{ 1 };
-	int counterClients{ 0 };
-	while (getline(file, line)) {
-		try {
-			vector<string> tokens = strf::split(line, ' ');
-			if (counter == 2) {
-				// reading number of clients
-				numClients = stoi(tokens.at(0));
-				n = numClients + 1;
-				//coords.resize(numClients + 1);
-			}
-			else if (counter == 4) {
-				// reading vehicle capacity
-				vehicleCapacity = stoi(tokens.at(0));
-			}
-			else if (counter == 7) {
-				// reading depot coordinates
-				depotCoord.x = strf::rndac(tokens.at(0));
-				depotCoord.y = strf::rndac(tokens.at(1));
-				coords.push_back(depotCoord); //coords.at(0) = depotCoord;
-			}
-			else if (counter >= 10 && counter < 10 + numClients) {
-				// reading clients coordinates
-				utilities::coord aux;
-				aux.x = strf::rndac(tokens.at(0));
-				aux.y = strf::rndac(tokens.at(1));
-				coords.push_back(aux);
-				//counterClients++;
-			}
-			else if (counter == 10 + numClients + 2) {
-				// reading clients demands
-				q.push_back(0); // first client represents the depot, with 0 demands
-				for (auto i : tokens) {
-					string aux = strf::rnd(i);
-					if (aux != "") {
-						q.push_back(stoi(aux));
-					}					
-				}
-			}
-		}
-		catch (exception e) { // exception handling			
-			cout << e.what() << endl;
-			cout << "Line: \n" << line << endl;
-			exit(1);
-		}
-		counter++;
-	}
-	// distance matrix calculus
-	distance.resize(n);
-	for (int i = 0; i < n; i++) {
-		distance.at(i).resize(n);
-	}
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < n; j++) {
-			distance.at(i).at(j) = floor(utilities::distance(coords.at(i), coords.at(j)));
-		}
-	}
+	this->directory = "";
+	this->fileName = fileName;
+	readInstance();
+}
+
+vrp::vrp(string directory, string fileName)
+{
+	this->directory = directory;
+	this->fileName = fileName;
+	readInstance();
 }
 
 void vrp::setupModel()
@@ -180,7 +193,7 @@ void vrp::setupModel()
 	try {
 		//env = new GRBEnv();
 		GRBModel model = GRBModel(env);
-		model.set(GRB_StringAttr_ModelName, "vrp");
+		model.set(GRB_StringAttr_ModelName, "vrp_" + fileName);
 
 		varX(model);
 		varF(model);
@@ -197,6 +210,7 @@ void vrp::setupModel()
 
 		model.optimize();
 
+		utilities::processSolution(model);
 		getSolution(model);
 	}
 	catch (GRBException e) {
@@ -207,37 +221,39 @@ void vrp::setupModel()
 
 void vrp::getSolution(GRBModel &model)
 {
-	int status = model.get(GRB_IntAttr_Status);
-
-	if (status == GRB_UNBOUNDED)
-	{
-		cout << "O modelo nao pode ser resolvido porque e ilimitado" << endl;
+	string dir = directory + "output/";
+	string fn = model.get(GRB_StringAttr_ModelName);
+	//model.write(directory + fn + ".sol");
+	fstream output(dir + fn, ios::out | ios::trunc);
+	if (output.is_open() == false) {
+		cout << "Error opening output file " << fn << endl;
+		cout << "On directory " << dir << endl;
+		exit(1);
 	}
-	if (status == GRB_OPTIMAL)
-	{
-		cout << "Solucao otima encontrada!" << endl;
-		//Acessa e imprime o valor da funcao objetivo
-
-		cout << "O valor da solucao otima e: " << model.get(GRB_DoubleAttr_ObjVal) << endl;
-
+	// writing variables in a format for easy ploting
+	output << "# x " << x.size() << " " << x.at(0).size() << endl;
+	for (int i = 0; i < x.size(); i++) {
+		for (int j = 0; j < x.at(i).size(); j++) {
+			auto temp = model.getVarByName("x(" + to_string(i) + "," + to_string(j) + ")").get(GRB_DoubleAttr_X);
+			if (temp == -0) { // i dont know why some values are beeing -0
+				temp *= -1;
+			}
+			output << temp << " ";
+		}
+		output << endl;
 	}
-	if (status == GRB_TIME_LIMIT)
-	{
-		cout << "Tempo limite!" << endl;
-		//Acessa e imprime o valor da funcao objetivo
-
-		cout << "O valor da melhot solucao ate o momento e: " << model.get(GRB_DoubleAttr_ObjVal) << endl;
-
+	output << "# f " << f.size() << " " << f.at(0).size() << endl;
+	for (int i = 0; i < x.size(); i++) {
+		for (int j = 0; j < x.at(i).size(); j++) {
+			auto temp = model.getVarByName("f(" + to_string(i) + "," + to_string(j) + ")").get(GRB_DoubleAttr_X);
+			if (temp == -0) { // i dont know why some values are beeing -0
+				temp *= -1;
+			}
+			output << temp << " ";
+		}
+		output << endl;
 	}
-	if (status == GRB_INFEASIBLE)
-	{
-		cout << "O modelo nao pode ser resolvido porque e inviavel" << endl;
-
-	}
-	else {
-		cout << "Status: " << status << endl;
-
-	}
+	output.close();
 }
 
 void vrp::printData()

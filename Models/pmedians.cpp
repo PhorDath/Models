@@ -153,7 +153,7 @@ void pmedians::c2(GRBModel &model)
 	for (int j = 0; j < m; j++) {
 		c2 += y.at(j);
 	}
-	model.addConstr(c2 == numPlaces, "c2");
+	model.addConstr(c2 == numMedians, "c2");
 }
 
 void pmedians::c3(GRBModel &model)
@@ -181,14 +181,15 @@ void pmedians::c4(GRBModel &model)
 
 pmedians::pmedians(string fileName)
 {
+	this->directory = "";
 	this->fileName = fileName;
 	readInstance();
 }
 
 pmedians::pmedians(string directory, string fileName)
 {
-	this->fileName = fileName;
 	this->directory = directory;
+	this->fileName = fileName;
 	readInstance();
 }
 
@@ -241,7 +242,7 @@ void pmedians::getSolution(GRBModel &model)
 		exit(1);
 	}
 	// writing variables in a format for easy ploting
-	output << "x: " << endl;
+	output << "# x " << n << " " << m << endl;
 	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < m; j++) {
 			auto temp = model.getVarByName("x(" + to_string(i) + "," + to_string(j) + ")").get(GRB_DoubleAttr_X);
@@ -252,7 +253,7 @@ void pmedians::getSolution(GRBModel &model)
 		}
 		output << endl;
 	}
-	output << "y: " << endl;
+	output << "# y " << m << endl;
 	for (int j = 0; j < m; j++) {
 		auto temp = model.getVarByName("y(" + to_string(j) + ")").get(GRB_DoubleAttr_X);
 		if (temp == -0) { // i dont know why some values are beeing -0
