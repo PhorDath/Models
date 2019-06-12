@@ -66,6 +66,7 @@ void vrp::readInstance()
 			distance.at(i).at(j) = floor(utilities::distance(coords.at(i), coords.at(j)));
 		}
 	}
+	file.close();
 }
 
 void vrp::varX(GRBModel &model)
@@ -187,6 +188,7 @@ vrp::vrp(string directory, string fileName)
 
 void vrp::setupModel()
 {
+	cout << "---------------Running " << this->fileName << endl << endl << endl;
 	GRBEnv env = GRBEnv(true);
 	env.start();
 
@@ -206,7 +208,7 @@ void vrp::setupModel()
 
 		model.write("teste.lp");
 
-		model.getEnv().set(GRB_DoubleParam_TimeLimit, 600);
+		model.getEnv().set(GRB_DoubleParam_TimeLimit, TMAX);
 
 		model.optimize();
 
@@ -219,7 +221,7 @@ void vrp::setupModel()
 	}
 }
 
-void vrp::getSolution(GRBModel &model)
+void vrp::getSolutionFull(GRBModel &model)
 {
 	string dir = directory + "output/";
 	string fn = model.get(GRB_StringAttr_ModelName);
@@ -252,6 +254,37 @@ void vrp::getSolution(GRBModel &model)
 			output << temp << " ";
 		}
 		output << endl;
+	}
+	output.close();
+}
+
+void vrp::getSolution(GRBModel & model)
+{
+	string dir = directory + "output/";
+	string fn = model.get(GRB_StringAttr_ModelName);
+	//model.write(directory + fn + ".sol");
+	fstream output(dir + fn, ios::out | ios::trunc);
+	if (output.is_open() == false) {
+		cout << "Error opening output file " << fn << endl;
+		cout << "On directory " << dir << endl;
+		exit(1);
+	}
+	// write fo, gap and execution time
+	output << model.get(GRB_DoubleAttr_ObjVal) << " " << model.get(GRB_DoubleAttr_MIPGap) << " " << model.get(GRB_DoubleAttr_Runtime) << endl;
+	// writing variables in a format for easy ploting
+	for (int i = 0; i < x.size(); i++) {
+		for (int j = 0; j < x.at(i).size(); j++) {
+			auto temp = model.getVarByName("x(" + to_string(i) + "," + to_string(j) + ")").get(GRB_DoubleAttr_X);
+			if (temp == 1) { // i dont know why some values are beeing -0
+				output << i << " " << j << " " << distance.at(i).at(j) << endl;
+			}
+		}
+	}
+	// write input data
+	output << "# data" << endl;
+	output << n << endl;
+	for (int i = 0; i < coords.size(); i++) {
+		output << coords.at(i).x << " " << coords.at(i).y << " " << q.at(i) << endl;
 	}
 	output.close();
 }

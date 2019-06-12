@@ -38,3 +38,7 @@ void utilities::processSolution(GRBModel &model)
 
 	}
 }
+
+void utilities::drawNetwork()
+{
+}

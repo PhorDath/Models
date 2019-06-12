@@ -14,6 +14,8 @@
 #include "strf.h"
 //#include "split.h"
 
+#define TMAX 3600
+
 using namespace std;
 
 class pmedians
@@ -52,7 +54,8 @@ public:
 			pmedians(string fileName);
 			pmedians(string directory, string fileName);
 	void	setupModel();
-	void	getSolution(GRBModel &model);
+	void	getSolutionFull(GRBModel &model); // this function writes into a file the solution of the model as it is
+	void	getSolution(GRBModel &model); // 
 	void	printData();
 			~pmedians();
 };

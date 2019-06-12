@@ -90,9 +90,9 @@ void pmedians::readInstance()
 			distanceMatrix.at(i).at(j) = int(distance(coordsClients.at(i), coordsPlaces.at(j)));
 		}
 	}
-
 	n = numClients;
 	m = numPlaces;
+	file.close();
 }
 
 void pmedians::varX(GRBModel &model)
@@ -195,6 +195,7 @@ pmedians::pmedians(string directory, string fileName)
 
 void pmedians::setupModel()
 {
+	cout << "---------------Running " << this->fileName << endl << endl << endl;
 	GRBEnv env = GRBEnv(true);
 	env.start();
 
@@ -203,19 +204,16 @@ void pmedians::setupModel()
 		GRBModel model = GRBModel(env);
 		model.set(GRB_StringAttr_ModelName, "pmedians_" + fileName);
 
-		varX(model);
-		varY(model);
-		fo(model);
-
-		c1(model);
+		varX(model); // x = 1 if client i is designated to facility j, 0 othwerwise
+		varY(model); // y = 1 if facility j, otherwise
+		fo(model); // minimize the cost
+		c1(model); // 
 		c2(model);
 		c3(model);
 		c4(model);
 
 		model.write("teste.lp");
-
-		model.getEnv().set(GRB_DoubleParam_TimeLimit, 600);
-
+		model.getEnv().set(GRB_DoubleParam_TimeLimit, TMAX);
 		model.optimize();
 
 		model.write("teste.sol");
@@ -230,7 +228,7 @@ void pmedians::setupModel()
 	}
 }
 
-void pmedians::getSolution(GRBModel &model)
+void pmedians::getSolutionFull(GRBModel &model)
 {
 	string dir = directory + "output/";
 	string fn = model.get(GRB_StringAttr_ModelName);
@@ -260,6 +258,48 @@ void pmedians::getSolution(GRBModel &model)
 			temp *= -1;
 		}
 		output << temp << " ";
+	}
+	output.close();
+}
+
+void pmedians::getSolution(GRBModel & model)
+{
+	string dir = directory + "output/";
+	string fn = model.get(GRB_StringAttr_ModelName);
+	fstream output(dir + fn, ios::out | ios::trunc);
+	if (output.is_open() == false) {
+		cout << "Error opening output file " << fn << endl;
+		cout << "On directory " << dir << endl;
+		exit(1);
+	}
+	// write fo, gap and execution time
+	output << model.get(GRB_DoubleAttr_ObjVal) << " " << model.get(GRB_DoubleAttr_MIPGap) << " " << model.get(GRB_DoubleAttr_Runtime) << endl;
+	output << m << " " << n << endl;
+	// writing the locals with facilities
+	for (int j = 0; j < m; j++) {
+		auto temp = model.getVarByName("y(" + to_string(j) + ")").get(GRB_DoubleAttr_X);
+		if (temp == 1) {
+			output << j << " ";
+		}		
+	}
+	output << endl;
+	// writing only the arcs used
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
+			auto temp = model.getVarByName("x(" + to_string(i) + "," + to_string(j) + ")").get(GRB_DoubleAttr_X);
+			if (temp == 1) {
+				output << i << " " << j << " " << distanceMatrix.at(i).at(j) << endl;
+			}
+		}
+	}
+	// write input data
+	output << "# data" << endl;
+	output << n << " " << m << endl;
+	for (int i = 0; i < coordsClients.size(); i++) {
+		output << coordsClients.at(i).x << " " << coordsClients.at(i).y << " " << demands.at(i) << endl;
+	}
+	for (int i = 0; i < coordsPlaces.size(); i++) {
+		output << coordsPlaces.at(i).x << " " << coordsPlaces.at(i).y << " " << placesCapacity << endl;
 	}
 	output.close();
 }

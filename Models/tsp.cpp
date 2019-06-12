@@ -50,6 +50,7 @@ void tsp::readInstance()
 			dMatrix.at(i).at(j) = int(utilities::distance(coordinates.at(i), coordinates.at(j)));
 		}
 	}
+	file.close();
 }
 
 void tsp::varX(GRBModel & model)
@@ -94,6 +95,7 @@ void tsp::fo(GRBModel & model)
 	model.update();
 }
 
+// from each city arrives only one arc
 void tsp::c1(GRBModel & model)
 {
 	for (int k = 0; k < numNodes; k++) {
@@ -106,6 +108,7 @@ void tsp::c1(GRBModel & model)
 	model.update();
 }
 
+// from each city leaves only one arc
 void tsp::c2(GRBModel & model)
 {
 	for (int k = 0; k < numNodes; k++) {
@@ -118,6 +121,7 @@ void tsp::c2(GRBModel & model)
 	model.update();
 }
 
+// flow conservation
 void tsp::c3(GRBModel & model)
 {
 	for (int k = 1; k < numNodes; k++) {
@@ -162,6 +166,7 @@ tsp::tsp(string directory, string fileName)
 
 void tsp::setupModel()
 {
+	cout << "---------------Running " << this->fileName << endl << endl << endl;
 	GRBEnv env = GRBEnv(true);
 	env.start();
 
@@ -174,7 +179,7 @@ void tsp::setupModel()
 
 		model.write("teste.lp");
 
-		model.getEnv().set(GRB_DoubleParam_TimeLimit, 600);
+		model.getEnv().set(GRB_DoubleParam_TimeLimit, TMAX);
 
 		model.optimize();
 
@@ -199,7 +204,13 @@ void tsp::pimModel(GRBModel & model)
 	c4(model);
 }
 
-void tsp::getSolution(GRBModel & model)
+void tsp::checkPermutation()
+{
+	auto temp = permutation;
+	sort(temp.begin(), temp.end());
+}
+
+void tsp::getSolutionFull(GRBModel & model)
 {
 	string dir = directory + "output/";
 	string fn = model.get(GRB_StringAttr_ModelName);
@@ -234,6 +245,52 @@ void tsp::getSolution(GRBModel & model)
 		output << endl;
 	}
 	output.close();
+}
+
+void tsp::getSolution(GRBModel & model)
+{
+	string dir = directory + "output/";
+	string fn = model.get(GRB_StringAttr_ModelName);
+	//model.write(directory + fn + ".sol");
+	fstream output(dir + fn, ios::out | ios::trunc);
+	if (output.is_open() == false) {
+		cout << "Error opening output file " << fn << endl;
+		cout << "On directory " << dir << endl;
+		exit(1);
+	}
+	// write fo, gap and execution time
+	output << model.get(GRB_DoubleAttr_ObjVal) << " " << model.get(GRB_DoubleAttr_MIPGap) << " " << model.get(GRB_DoubleAttr_Runtime) << endl;
+	// writing variables in a format for easy ploting
+	vector<int> aux;
+	aux.resize(numNodes, 0);
+	for (int i = 0; i < numNodes; i++) {
+		for (int j = 0; j < numNodes; j++) {
+			auto temp = model.getVarByName("x(" + to_string(i) + "," + to_string(j) + ")").get(GRB_DoubleAttr_X);
+			if (temp == 1) { 
+				output << i << " " << j << " " << dMatrix.at(i).at(j) << endl;
+				aux.at(i) = j;
+			}
+		}
+	}
+	// write input data
+	output << "# data" << endl;
+	output << numNodes << endl;
+	for (int i = 0; i < coordinates.size(); i++) {
+		output << coordinates.at(i).x << " " << coordinates.at(i).y << endl;
+	}
+	output.close();
+	//
+	//permutation.resize(numNodes);
+	permutation.push_back(0);
+	//cout << 0 << " ";
+	int i = 0;
+	int next = 0;
+	while(i < numNodes - 1){		
+		//cout << aux.at(next) << " ";
+		permutation.push_back(aux.at(next));
+		next = aux.at(next);
+		i++;
+	}
 }
 
 void tsp::printData()

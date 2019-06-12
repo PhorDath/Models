@@ -6,6 +6,8 @@
 #include <gurobi_c++.h>
 #include "strf.h"
 
+#define TMAX 3600
+
 class jobsScheduling
 {
 private:
@@ -43,6 +45,7 @@ public:
 	jobsScheduling(string fileName);
 	jobsScheduling(string directory, string fileName);
 	void setupModel();
+	void getSolutionFull(GRBModel &model);
 	void getSolution(GRBModel &model);
 	void printData();
 	~jobsScheduling();

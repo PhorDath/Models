@@ -6,6 +6,8 @@
 #include "strf.h"
 #include "utilities.h"
 
+#define TMAX 3600
+
 using namespace std;
 
 class flowshop
@@ -42,6 +44,7 @@ public:
 	flowshop(string fileName);
 	flowshop(string directory, string fileName);
 	void setupModel();
+	void getSolutionFull(GRBModel &model);
 	void getSolution(GRBModel &model);
 	void printData();
 	~flowshop();

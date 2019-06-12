@@ -16,6 +16,7 @@ jobsScheduling::jobsScheduling(string directory, string fileName)
 
 void jobsScheduling::setupModel()
 {
+	cout << "---------------Running " << this->fileName << endl << endl << endl;
 	GRBEnv env = GRBEnv(true);
 	env.start();
 
@@ -25,8 +26,9 @@ void jobsScheduling::setupModel()
 		model.set(GRB_StringAttr_ModelName, "jobsScheduling_" + fileName);
 
 		varX(model);
+		varT(model);
+		varC(model);
 		fo(model);
-
 		c1(model);
 		c2(model);
 		c3(model);
@@ -36,7 +38,7 @@ void jobsScheduling::setupModel()
 
 		model.write("teste.lp");
 
-		model.getEnv().set(GRB_DoubleParam_TimeLimit, 600);
+		model.getEnv().set(GRB_DoubleParam_TimeLimit, TMAX);//TMAX);
 
 		model.optimize();
 
@@ -48,7 +50,7 @@ void jobsScheduling::setupModel()
 	}
 }
 
-void jobsScheduling::getSolution(GRBModel &model)
+void jobsScheduling::getSolutionFull(GRBModel &model)
 {
 	string dir = directory + "output/";
 	string fn = model.get(GRB_StringAttr_ModelName);
@@ -92,6 +94,36 @@ void jobsScheduling::getSolution(GRBModel &model)
 			temp *= -1;
 		}
 		output << temp << " ";
+	}
+	output << endl;
+	output.close();
+}
+
+void jobsScheduling::getSolution(GRBModel & model)
+{
+	string dir = directory + "output/";
+	string fn = model.get(GRB_StringAttr_ModelName);
+	//model.write(directory + fn + ".sol");
+	fstream output(dir + fn, ios::out | ios::trunc);
+	if (output.is_open() == false) {
+		cout << "Error opening output file " << fn << endl;
+		cout << "On directory " << dir << endl;
+		exit(1);
+	}
+	// write fo, gap and execution time
+	output << model.get(GRB_DoubleAttr_ObjVal) << " " << model.get(GRB_DoubleAttr_MIPGap) << " " << model.get(GRB_DoubleAttr_Runtime) << endl;
+	// writing variables in a format for easy ploting
+	for (int k = 0; k < numMachines; k++) { // for each machine k
+		output << k << ": ";
+		for (int i = 0; i < x.size(); i++) {
+			for (int j = 0; j < x.at(i).size(); j++) {
+				auto temp = model.getVarByName("x(" + to_string(i) + "," + to_string(j) + "," + to_string(k) + ")").get(GRB_DoubleAttr_X);
+				if (temp == 1) { // i dont know why some values are beeing -0
+					output << i << " ";
+				}
+			}
+		}
+		output << endl;
 	}
 	output << endl;
 	output.close();
@@ -178,7 +210,7 @@ void jobsScheduling::readInstance()
 		counter++;
 	}
 	// bigM calculus
-	// the big M is being defined as the sum of pij, i.e, all the comlpetitions times for every task and machine
+	// the big M is being defined as the sum of pij, i.e, all the completitions times for every task and machine
 	int aux = 0;
 	for (int i = 0; i < p.size(); i++) {
 		for (int j = 0; j < p.at(i).size(); j++) {
@@ -186,6 +218,7 @@ void jobsScheduling::readInstance()
 		}
 	}
 	bigM = aux;
+	file.close();
 }
 
 void jobsScheduling::varX(GRBModel &model)
@@ -230,7 +263,7 @@ void jobsScheduling::varT(GRBModel &model)
 	// resize t
 	t.resize(numJobs);
 	// add t to model
-	for (int i = 0; i < numMachines; i++) {
+	for (int i = 0; i < numJobs; i++) {
 		t.at(i) = model.addVar(0, GRB_INFINITY, 1, GRB_CONTINUOUS, "t(" + to_string(i) + ")");
 	}
 	model.update();
@@ -248,10 +281,10 @@ void jobsScheduling::fo(GRBModel &model)
 
 void jobsScheduling::c1(GRBModel &model)
 {
-	for (int j = 0; j < numJobs; j++) {
+	for (int j = 1; j < numJobs; j++) { // for (int j = 0; j < numJobs; j++) {
 		GRBLinExpr c1{ 0 };
-		for (int k = 0; k < numMachines; k++) {
-			for (int i = 0; i < numJobs; i++) {
+		for (int k = 0; k < numMachines; k++) { // for each machine
+			for (int i = 0; i < numJobs; i++) { // for each job
 				c1 += x.at(i).at(j).at(k);
 			}
 		}
@@ -262,9 +295,9 @@ void jobsScheduling::c1(GRBModel &model)
 
 void jobsScheduling::c2(GRBModel &model)
 {
-	for (int k = 0; k < numMachines; k++) {
+	for (int k = 0; k < numMachines; k++) { // for each machine
 		GRBLinExpr c2{ 0 };
-		for (int j = 0; j < numJobs; j++) {
+		for (int j = 1; j < numJobs; j++) { // for each job // for (int j = 0; j < numJobs; j++) {
 			c2 += x.at(0).at(j).at(k);
 		}
 		model.addConstr(c2 <= 1, "c2(" + to_string(k) + ")");
@@ -274,8 +307,8 @@ void jobsScheduling::c2(GRBModel &model)
 
 void jobsScheduling::c3(GRBModel &model)
 {
-	for (int h = 0; h < numJobs; h++) {		
-		for (int k = 0; k < numMachines; k++) {
+	for (int h = 1; h < numJobs; h++) {	// for (int h = 0; h < numJobs; h++) {	
+		for (int k = 0; k < numMachines; k++) { // for each machine
 			GRBLinExpr c31{ 0 };
 			GRBLinExpr c32{ 0 };
 			for (int i = 0; i < numJobs; i++) {
@@ -296,17 +329,17 @@ void jobsScheduling::c3(GRBModel &model)
 
 void jobsScheduling::c4(GRBModel &model)
 {
-	for (int k = 0; k < numMachines; k++) {
-		model.addConstr(c.at(0).at(k) == 0, "c4(" + to_string(k) + ")");
+	for (int k = 0; k < numMachines; k++) { // for each machine
+		model.addConstr(c.at(0).at(k) == 0, "c4(" + to_string(k) + ")"); // the fake activite ends on time zero
 	}
 	model.update();
 }
 
 void jobsScheduling::c5(GRBModel &model)
 {
-	for (int i = 0; i < numJobs; i++) {
-		for (int j = 1; j < numJobs; j++) {
-			for (int k = 1; k < numMachines; k++) {
+	for (int i = 0; i < numJobs; i++) { // for each job
+		for (int j = 1; j < numJobs; j++) { // for each job but the zero
+			for (int k = 0; k < numMachines; k++) { // for (int k = 1; k < numMachines; k++) {
 				GRBLinExpr c51{ 0 };
 				GRBLinExpr c52{ 0 };
 				c51 = c.at(j).at(k);
@@ -320,8 +353,8 @@ void jobsScheduling::c5(GRBModel &model)
 
 void jobsScheduling::c6(GRBModel &model)
 {
-	for (int i = 1; i < numJobs; i++) {
-		for (int k = 1; k < numMachines; k++) {
+	for (int i = 1; i < numJobs; i++) { // for each job but the fake initial one
+		for (int k = 0; k < numMachines; k++) { // for (int k = 1; k < numMachines; k++) {
 			GRBLinExpr c61{ 0 };
 			GRBLinExpr c62{ 0 };
 			c61 = t.at(i);

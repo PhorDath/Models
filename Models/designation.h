@@ -17,6 +17,8 @@
 #include "useful.h"
 #include "strf.h"
 
+#define TMAX 3600
+
 using namespace std;
 
 class designation
@@ -32,6 +34,7 @@ private:
 	vector<int> B; // machines capacity
 	
 	void readInstance(); // read the instances given by the professor
+	void readInstance2(); // read the bad formated instances given by the professor
 
 	// gurobi variables
 	vector<vector<GRBVar>> x; // 1 if task j is assigned to machine i, 0 otherwise
@@ -46,6 +49,7 @@ public:
 	designation(string fileName);
 	designation(string directory, string fileName);
 	void setupModel();
+	void getSolutionFull(GRBModel &model);
 	void getSolution(GRBModel &model);
 	void printData();
 	~designation();

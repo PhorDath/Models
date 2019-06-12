@@ -14,6 +14,7 @@ namespace utilities {
 
 	float distance(coord, coord);
 	void processSolution(GRBModel &);
+	void drawNetwork();
 }
 
 #endif // !UTILITIES_H

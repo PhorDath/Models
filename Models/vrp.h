@@ -8,6 +8,8 @@
 #include "strf.h"
 #include "utilities.h"
 
+#define TMAX 3600
+
 using namespace std;
 
 class vrp
@@ -46,6 +48,7 @@ public:
 	vrp(string fileName);
 	vrp(string directory, string fileName);
 	void setupModel();
+	void getSolutionFull(GRBModel &model);
 	void getSolution(GRBModel &model);
 	void printData();
 	~vrp();

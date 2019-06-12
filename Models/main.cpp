@@ -28,7 +28,8 @@ void m1_all() {
 
 	string line;
 	while (getline(file, line)) {
-		pmedians p(dir, "pmedianas/" + line);
+		cout << "Executing model with file " << line << endl;
+		pmedians p(DIR + MODEL1, line);
 		p.setupModel();
 	}
 }
@@ -39,8 +40,8 @@ void m2_all() {
 
 	string line;
 	while (getline(file, line)) {
-		pmedians d(dir + line);
-		d.setupModel();
+			designation d(DIR + MODEL2, line);
+			d.setupModel();
 	}
 }
 
@@ -50,8 +51,8 @@ void m3_all() {
 
 	string line;
 	while (getline(file, line)) {
-		tsp t(dir + line);
-
+		tsp t(DIR + MODEL3, line);
+		t.setupModel();
 	}
 }
 
@@ -61,7 +62,7 @@ void m4_all() {
 
 	string line;
 	while (getline(file, line)) {
-		vrp v(dir + line);
+		vrp v(DIR + MODEL4, line);
 		v.setupModel();
 	}
 }
@@ -72,7 +73,7 @@ void m5_all() {
 
 	string line;
 	while (getline(file, line)) {
-		flowshop f(dir + line);
+		flowshop f(DIR + MODEL5, line);
 		f.setupModel();
 	}
 }
@@ -83,17 +84,17 @@ void m6_all() {
 
 	string line;
 	while (getline(file, line)) {
-		jobsScheduling j(dir + line);
+		jobsScheduling j(DIR + MODEL6, line);
 		j.setupModel();
 	}
 }
 
 int main() {
-	int op{ 0 };
+	int op{ 7 };
 	//cin >> op;
 
 	if (op == 0) {
-		tsp m(DIR + MODEL3, INST3);
+		tsp m(DIR + MODEL3, "1_TSP_80.txt");
 		m.printData();
 		m.setupModel();
 		
@@ -122,6 +123,14 @@ int main() {
 	else if (op == 6) {
 		m6_all();
 	}
-		
+	else if (op == 7) {
+		//m1_all(); // done
+		//m2_all(); // done
+		//m3_all(); // done
+		//m4_all(); // done
+		//m5_all(); // done
+		m6_all(); // 
+	}
+
 	return 0;
 }
