@@ -1,7 +1,5 @@
 #include "tsp.h"
 
-
-
 void tsp::readInstance()
 {
 	fstream file;
@@ -138,6 +136,7 @@ void tsp::c3(GRBModel & model)
 	model.update();
 }
 
+// pim model constrain
 void tsp::c4(GRBModel & model)
 {
 	for (int i = 0; i < numNodes; i++) {

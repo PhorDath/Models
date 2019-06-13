@@ -255,6 +255,7 @@ void designation::fo(GRBModel &model)
 	model.update();
 }
 
+// the resource capacity on each machine must be respected
 void designation::c1(GRBModel &model)
 {
 	// capacity of each machine must be respected
@@ -267,6 +268,7 @@ void designation::c1(GRBModel &model)
 	}
 }
 
+// each task must be executed in only one machine
 void designation::c2(GRBModel &model)
 {
 	// each task must be executed by one machine
@@ -305,8 +307,7 @@ void designation::setupModel()
 		model.set(GRB_StringAttr_ModelName, "designation_" + fileName);
 
 		varX(model);
-		fo(model);
-
+		fo(model); 
 		c1(model);
 		c2(model);
 

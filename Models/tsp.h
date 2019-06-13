@@ -42,7 +42,7 @@ private:
 	void c2(GRBModel &model); // from each city leaves only one arc
 	// PIM model constrains
 	void c3(GRBModel &model); // flow conservation
-	void c4(GRBModel &model); //
+	void c4(GRBModel &model); // 
 
 public:
 	tsp(string fileName);

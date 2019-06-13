@@ -5,6 +5,7 @@
 #include "vrp.h"
 #include "flowshop.h"
 #include "jobsscheduling.h"
+#include "batchScheduling.h"
 
 using namespace std;
 
@@ -89,12 +90,23 @@ void m6_all() {
 	}
 }
 
+void m7_all() {
+	string dir = DIR + MODEL6;
+	fstream file(dir + "all.txt", ios::in);
+
+	string line;
+	while (getline(file, line)) {
+		batchScheduling b(DIR + MODEL6, line);
+		b.setupModel();
+	}
+}
+
 int main() {
-	int op{ 7 };
+	int op{ 8 };
 	//cin >> op;
 
 	if (op == 0) {
-		tsp m(DIR + MODEL3, "1_TSP_80.txt");
+		batchScheduling m(DIR + MODEL6, "1_1_n20_m2_S15_r0.05.txt");
 		m.printData();
 		m.setupModel();
 		
@@ -123,13 +135,19 @@ int main() {
 	else if (op == 6) {
 		m6_all();
 	}
+	// batch scheduling
 	else if (op == 7) {
+		m7_all();
+	}
+	else if (op == 8) {
 		//m1_all(); // done
 		//m2_all(); // done
 		//m3_all(); // done
 		//m4_all(); // done
 		//m5_all(); // done
-		m6_all(); // 
+		//m6_all(); // done
+		m7_all(); //
+
 	}
 
 	return 0;

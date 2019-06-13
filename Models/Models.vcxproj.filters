@@ -42,6 +42,9 @@
     <ClCompile Include="jobsscheduling.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="batchScheduling.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pmedians.h">
@@ -75,6 +78,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="jobsscheduling.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="batchScheduling.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

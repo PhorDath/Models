@@ -135,6 +135,7 @@ void pmedians::fo(GRBModel &model)
 	model.update();
 }
 
+// each client i must be attended by only one facility
 void pmedians::c1(GRBModel &model)
 {
 	for (int i = 0; i < n; i++) {
@@ -147,6 +148,7 @@ void pmedians::c1(GRBModel &model)
 	model.update();
 }
 
+// exactly p facilities must be opened
 void pmedians::c2(GRBModel &model)
 {
 	GRBLinExpr c2 = 0;
@@ -156,6 +158,7 @@ void pmedians::c2(GRBModel &model)
 	model.addConstr(c2 == numMedians, "c2");
 }
 
+// the demand's sum can't be higher then the facility capacity
 void pmedians::c3(GRBModel &model)
 {
 	for (int j = 0; j < m; j++) {
@@ -168,6 +171,7 @@ void pmedians::c3(GRBModel &model)
 	model.update();
 }
 
+// each client must be designated to a opend facility
 void pmedians::c4(GRBModel &model)
 {
 	for (int i = 0; i < n; i++) {
@@ -207,10 +211,10 @@ void pmedians::setupModel()
 		varX(model); // x = 1 if client i is designated to facility j, 0 othwerwise
 		varY(model); // y = 1 if facility j, otherwise
 		fo(model); // minimize the cost
-		c1(model); // 
-		c2(model);
-		c3(model);
-		c4(model);
+		c1(model); // each client i must be attended by only one facility
+		c2(model); // exactly p facilities must be opened
+		c3(model); // the demand's sum can't be higher then the facility capacity
+		c4(model); // each client must be designated to a opend facility
 
 		model.write("teste.lp");
 		model.getEnv().set(GRB_DoubleParam_TimeLimit, TMAX);
@@ -220,7 +224,6 @@ void pmedians::setupModel()
 		utilities::processSolution(model);
 		getSolution(model);
 
-		//getSolution(model);
 	}
 	catch (GRBException e) {
 		cout << "Error code = " << e.getErrorCode() << endl;

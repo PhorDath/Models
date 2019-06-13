@@ -41,7 +41,7 @@ private:
 
 	// decision variables setup
 	void varX(GRBModel &model);
-	void fo(GRBModel &model);
+	void fo(GRBModel &model); // minimize the total cost
 	void c1(GRBModel &model); // the resource capacity on each machine must be respected
 	void c2(GRBModel &model); // each task must be executed in only one machine
 

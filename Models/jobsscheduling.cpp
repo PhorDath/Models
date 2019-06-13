@@ -26,15 +26,25 @@ void jobsScheduling::setupModel()
 		model.set(GRB_StringAttr_ModelName, "jobsScheduling_" + fileName);
 
 		varX(model);
+		cout << "1\n";
 		varT(model);
+		cout << "2\n";
 		varC(model);
+		cout << "3\n";
 		fo(model);
+		cout << "4\n";
 		c1(model);
+		cout << "5\n";
 		c2(model);
+		cout << "6\n";
 		c3(model);
+		cout << "7\n";
 		c4(model);
+		cout << "8\n";
 		c5(model);
+		cout << "9\n";
 		c6(model);
+		cout << "10\n";
 
 		model.write("teste.lp");
 
@@ -47,6 +57,9 @@ void jobsScheduling::setupModel()
 	catch (GRBException e) {
 		cout << "Error code = " << e.getErrorCode() << endl;
 		cout << e.getMessage() << endl;
+	}
+	catch (exception e) {
+		cout << e.what() << endl;
 	}
 }
 
@@ -111,7 +124,7 @@ void jobsScheduling::getSolution(GRBModel & model)
 		exit(1);
 	}
 	// write fo, gap and execution time
-	output << model.get(GRB_DoubleAttr_ObjVal) << " " << model.get(GRB_DoubleAttr_MIPGap) << " " << model.get(GRB_DoubleAttr_Runtime) << endl;
+	output << model.get(GRB_DoubleAttr_ObjVal) << " " << model.get(GRB_DoubleAttr_MIPGap)*100 << " " << model.get(GRB_DoubleAttr_Runtime) << endl;
 	// writing variables in a format for easy ploting
 	for (int k = 0; k < numMachines; k++) { // for each machine k
 		output << k << ": ";
@@ -218,6 +231,7 @@ void jobsScheduling::readInstance()
 		}
 	}
 	bigM = aux;
+	numJobs++; // for adding the fake job
 	file.close();
 }
 
@@ -269,6 +283,7 @@ void jobsScheduling::varT(GRBModel &model)
 	model.update();
 }
 
+
 void jobsScheduling::fo(GRBModel &model)
 {
 	GRBLinExpr fo{ 0 };
@@ -279,6 +294,7 @@ void jobsScheduling::fo(GRBModel &model)
 	model.update();
 }
 
+// each job j has a unique immediate predecessor job in a machine
 void jobsScheduling::c1(GRBModel &model)
 {
 	for (int j = 1; j < numJobs; j++) { // for (int j = 0; j < numJobs; j++) {
@@ -293,6 +309,7 @@ void jobsScheduling::c1(GRBModel &model)
 	model.update();
 }
 
+// each machine k, if used, has a unique processing sequence
 void jobsScheduling::c2(GRBModel &model)
 {
 	for (int k = 0; k < numMachines; k++) { // for each machine
@@ -305,6 +322,7 @@ void jobsScheduling::c2(GRBModel &model)
 	model.update();
 }
 
+// each job h must have only one immediate predecessor job, excluding the fake initial job (0)
 void jobsScheduling::c3(GRBModel &model)
 {
 	for (int h = 1; h < numJobs; h++) {	// for (int h = 0; h < numJobs; h++) {	
@@ -327,6 +345,7 @@ void jobsScheduling::c3(GRBModel &model)
 	model.update();
 }
 
+// the first job (fake), must end in the time 0
 void jobsScheduling::c4(GRBModel &model)
 {
 	for (int k = 0; k < numMachines; k++) { // for each machine
@@ -335,6 +354,7 @@ void jobsScheduling::c4(GRBModel &model)
 	model.update();
 }
 
+// calculates the end time of jobs in your respectives machines
 void jobsScheduling::c5(GRBModel &model)
 {
 	for (int i = 0; i < numJobs; i++) { // for each job
@@ -343,7 +363,7 @@ void jobsScheduling::c5(GRBModel &model)
 				GRBLinExpr c51{ 0 };
 				GRBLinExpr c52{ 0 };
 				c51 = c.at(j).at(k);
-				c52 = c.at(i).at(k) - bigM + (bigM + p.at(j).at(k)) * x.at(i).at(j).at(k);
+				c52 = c.at(i).at(k) - bigM + (bigM + p.at(j-1).at(k)) * x.at(i).at(j).at(k); // j - 1
 				model.addConstr(c51 >= c52, "c5(" + to_string(i) + "," + to_string(j) + "," + to_string(k) + ")");
 			}
 		}
@@ -351,14 +371,15 @@ void jobsScheduling::c5(GRBModel &model)
 	model.update();
 }
 
+// calculates jobs delay
 void jobsScheduling::c6(GRBModel &model)
 {
 	for (int i = 1; i < numJobs; i++) { // for each job but the fake initial one
 		for (int k = 0; k < numMachines; k++) { // for (int k = 1; k < numMachines; k++) {
 			GRBLinExpr c61{ 0 };
 			GRBLinExpr c62{ 0 };
-			c61 = t.at(i);
-			c62 = c.at(i).at(k) - r.at(i);
+			c61 = t.at(i-1);
+			c62 = c.at(i-1).at(k) - r.at(i-1);
 			model.addConstr(c61 >= c62, "c6(" + to_string(i) + "," + to_string(k) + ")");
 		}
 	}

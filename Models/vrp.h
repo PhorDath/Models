@@ -37,9 +37,9 @@ private:
 	// model setup functions
 	void varX(GRBModel &model);
 	void varF(GRBModel &model);
-	void fo(GRBModel &model);
-	void c1(GRBModel &model);
-	void c2(GRBModel &model);
+	void fo(GRBModel &model); // minimize distance traveled
+	void c1(GRBModel &model); // sum of arcs entering each node must be equal 1, excluding the depot
+	void c2(GRBModel &model); // sum of acrs leaving each node must be equal 1, excluding the depot
 	void c3(GRBModel &model); // number of arcs exiting the depot must be the same amount of arcs entering the depot
 	void c4(GRBModel &model); // flow conservation
 	void c5(GRBModel &model); // vehicle capacity must be respected

@@ -69,6 +69,7 @@ void vrp::readInstance()
 	file.close();
 }
 
+// 1 if arch (i, j) is used, 0 otherwise
 void vrp::varX(GRBModel &model)
 {
 	x.resize(n);
@@ -83,6 +84,7 @@ void vrp::varX(GRBModel &model)
 	model.update();
 }
 
+// amount of flow sent from i to j
 void vrp::varF(GRBModel &model)
 {
 	f.resize(n);
@@ -97,6 +99,7 @@ void vrp::varF(GRBModel &model)
 	model.update();
 }
 
+// minimize distance traveled
 void vrp::fo(GRBModel &model)
 {
 	GRBLinExpr FO = 0;
@@ -109,6 +112,7 @@ void vrp::fo(GRBModel &model)
 	model.update();
 }
 
+// sum of arcs entering each node must be equal 1, excluding the depot
 void vrp::c1(GRBModel &model)
 {
 	for (int j = 1; j < numClients + 1; j++) {
@@ -122,6 +126,7 @@ void vrp::c1(GRBModel &model)
 	model.update();
 }
 
+// sum of acrs leaving each node must be equal 1, excluding the depot
 void vrp::c2(GRBModel &model)
 {
 	for (int i = 1; i < numClients + 1; i++) {
@@ -135,6 +140,7 @@ void vrp::c2(GRBModel &model)
 	model.update();
 }
 
+// number of arcs exiting the depot must be the same amount of arcs entering the depot
 void vrp::c3(GRBModel &model)
 {
 	GRBLinExpr c31 = 0;
@@ -148,6 +154,7 @@ void vrp::c3(GRBModel &model)
 	model.update();
 }
 
+// flow conservation
 void vrp::c4(GRBModel &model)
 {
 	for (int k = 1; k < numClients + 1; k++) {
@@ -161,6 +168,7 @@ void vrp::c4(GRBModel &model)
 	model.update();
 }
 
+// vehicle capacity must be respected
 void vrp::c5(GRBModel &model)
 {
 	for (int i = 0; i < numClients + 1; i++) {
@@ -270,7 +278,7 @@ void vrp::getSolution(GRBModel & model)
 		exit(1);
 	}
 	// write fo, gap and execution time
-	output << model.get(GRB_DoubleAttr_ObjVal) << " " << model.get(GRB_DoubleAttr_MIPGap) << " " << model.get(GRB_DoubleAttr_Runtime) << endl;
+	output << model.get(GRB_DoubleAttr_ObjVal) << " " << model.get(GRB_DoubleAttr_MIPGap)*100 << " " << model.get(GRB_DoubleAttr_Runtime) << endl;
 	// writing variables in a format for easy ploting
 	for (int i = 0; i < x.size(); i++) {
 		for (int j = 0; j < x.at(i).size(); j++) {

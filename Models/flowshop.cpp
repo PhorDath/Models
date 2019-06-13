@@ -104,7 +104,7 @@ void flowshop::getSolution(GRBModel & model)
 		exit(1);
 	}
 	// write fo, gap and execution time
-	output << model.get(GRB_DoubleAttr_ObjVal) << " " << model.get(GRB_DoubleAttr_MIPGap) << " " << model.get(GRB_DoubleAttr_Runtime) << endl;
+	output << model.get(GRB_DoubleAttr_ObjVal) << " " << model.get(GRB_DoubleAttr_MIPGap) * 100 << " " << model.get(GRB_DoubleAttr_Runtime) << endl;
 	// writing variables in a format for easy ploting
 	for (int i = 0; i < x.size(); i++) {
 		for (int j = 0; j < x.at(i).size(); j++) {
@@ -212,6 +212,7 @@ void flowshop::fo(GRBModel &model)
 	model.update();
 }
 
+// each task i must be associated to a unique position j
 void flowshop::c1(GRBModel &model)
 {
 	for (int i = 0; i < numTasks; i++) {
@@ -224,6 +225,7 @@ void flowshop::c1(GRBModel &model)
 	model.update();
 }
 
+// each position j must be associated to a unique task i
 void flowshop::c2(GRBModel &model)
 {
 	for (int j = 0; j < numTasks; j++) {
@@ -236,11 +238,13 @@ void flowshop::c2(GRBModel &model)
 	model.update();
 }
 
+// task 0 must begin at time 0 in the machine 0
 void flowshop::c3(GRBModel &model)
 {
 	model.addConstr(s.at(0).at(0) == 0, "c3");
 }
 
+// calculates processing times for every tasks in machine 0
 void flowshop::c4(GRBModel &model)
 {
 	for (int j = 0; j < numTasks - 1; j++) {
@@ -254,19 +258,21 @@ void flowshop::c4(GRBModel &model)
 	model.update();
 }
 
+// calculates processing times of the first taks in machines 2 to m-1
 void flowshop::c5(GRBModel &model)
 {
 	for (int k = 0; k < numMachines - 1; k++) {
 		GRBLinExpr c5 = 0;
-		c5 += s.at(k).at(1);
+		c5 += s.at(k).at(0); // c5 += s.at(k).at(1);
 		for (int i = 0; i < numTasks; i++) {
 			c5 += p.at(i).at(k) * x.at(i).at(0);
 		}
-		model.addConstr(c5 == s.at(k + 1).at(1), "c5(" + to_string(k) + ")");
+		model.addConstr(c5 == s.at(k + 1).at(0), "c5(" + to_string(k) + ")"); // model.addConstr(c5 == s.at(k + 1).at(1), "c5(" + to_string(k) + ")");
 	}
 	model.update();
 }
 
+// the task in the position j >= 2 cant be started in the next machine k+1 before be finished on your current machine
 void flowshop::c6(GRBModel &model)
 {
 	for (int j = 1; j < numTasks; j++) {
@@ -282,6 +288,7 @@ void flowshop::c6(GRBModel &model)
 	model.update();
 }
 
+// the task in position j+1 will begin to be proccessed on machine k after the task of position j finish your processing in the same machine
 void flowshop::c7(GRBModel &model)
 {
 	for (int j = 0; j < numTasks - 1; j++) {
