@@ -143,10 +143,10 @@ int main() {
 		//m1_all(); // done
 		//m2_all(); // done
 		//m3_all(); // done
-		//m4_all(); // done
+		m4_all(); // done
 		//m5_all(); // done
 		//m6_all(); // done
-		m7_all(); //
+		//m7_all(); // done
 
 	}
 

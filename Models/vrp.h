@@ -8,7 +8,7 @@
 #include "strf.h"
 #include "utilities.h"
 
-#define TMAX 3600
+#define TMAX 900//3600
 
 using namespace std;
 

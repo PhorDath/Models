@@ -25,25 +25,17 @@ void batchScheduling::setupModel()
 		GRBModel model = GRBModel(env);
 		model.set(GRB_StringAttr_ModelName, "BatchScheduling_" + fileName);
 
-		varX(model); //
-
-		varSB(model); //
-
-		varPB(model); //
-
-		varC(model); // 
-
-		fo(model); //
-
-		c1(model); // 
-
-		c2(model); // 
-
-		c3(model); //
-		c4(model); //
-		c5(model); // 
-
-		c6(model); //
+		varX(model); // xjbk = 1 if job is designated to batch b on machine k
+		varSB(model); // sbk = begining time of batch b on machine k
+		varPB(model); // pbk = processing time of batch b on machine k
+		varC(model); // makespan 
+		fo(model); // minimize the makespan
+		c1(model); // each job j must be on a unique batch
+		c2(model); // the sum of the jobs in the batch cant be higher then the machine capacity
+		c3(model); // a batch can only begging after all his jobs are available
+		c4(model); // a batch batch should start after the previous batch ends
+		c5(model); // the processing time of a batch is the longest of its tasks
+		c6(model); // determines is the longest completion time on each machine
 
 
 		model.write("teste.lp");
@@ -146,14 +138,6 @@ void batchScheduling::getSolution(GRBModel & model)
 			}
 			output << "|";
 		}
-		//if (batch.size() > 0) {
-		//	output << "| ";
-		//	for (auto i : batch) {
-		//		output << i << " ";
-		//	}
-		//	output << " |";
-		//	batch.clear();
-		//}
 		output << endl;
 	}
 	output << endl;
@@ -280,10 +264,6 @@ void batchScheduling::varSB(GRBModel & model)
 			}
 			catch (exception e) {
 				cout << e.what() << endl;
-				cout << "b: " << b << endl;
-				cout << "k: " << k << endl;
-				cout << "sb.size(): " << sb.size() << endl;
-				cout << "sb.at(b).size(): " << sb.at(b).size() << endl;
 				exit(1);
 			}
 		}
@@ -406,3 +386,4 @@ void batchScheduling::c6(GRBModel & model)
 	}
 	model.update();
 }
+
